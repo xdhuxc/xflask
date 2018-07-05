@@ -20,8 +20,10 @@ def get_all_keys():
     return resp.json()
 
 
-def getKeyFromValue(key):
-    current_url = etcd_base_url + '/'
+def get_value_from_key_path(key_path):
+    current_url = etcd_base_url + key_path
+    resp = requests.get(current_url)
+    print(resp.json())
 
 if __name__ == '__main__':
     get_all_keys()
