@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+
+set target_host [ lindex $argv 0 ]
+set username    [ lindex $argv 1 ]
+set password    [ lindex $argv 2 ]
+set file_path   [ lindex $argv 3 ]
+set port        [ lindex $argv 4 ]
+
+spawn ssh-copy-id -i ${file_path} -p ${port} ${username}@${target_host}
+expect {
+    "*(yes/no)?" { send "yes\r"; exp_continue }
+    "password:" { send "${password}\r"; exp_continue }
+     "Overwrite (y/n)?" { send "y\r"; exp_continue }
+}
