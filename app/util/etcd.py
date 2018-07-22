@@ -25,5 +25,6 @@ def get_value_from_key_path(key_path):
     resp = requests.get(current_url)
     print(resp.json())
 
+
 if __name__ == '__main__':
     get_all_keys()

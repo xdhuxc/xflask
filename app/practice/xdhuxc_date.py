@@ -14,7 +14,8 @@ time_stamp = int(time.mktime(time_struct))  #
 print("时间戳为：%s" % time_stamp)
 
 # 将时间戳转换为指定格式日期
-local_time = time.localtime(time_stamp)
+local_time = time.localtime(time_stamp) # 返回值为时间元组
+print(local_time)
 str_time = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
 print("日期为：%s" % str_time)
 
