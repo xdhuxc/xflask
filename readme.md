@@ -5,8 +5,13 @@
 ```angular2html
 pip install marathon
 ```
+
 #### 安装 kafka-python 工具包
 ```angular2html
 pip install kafka-python
 ```
+
 #### 安装elasticsearch工具包
+```angular2html
+pip install elasticsearch
+```

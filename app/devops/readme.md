@@ -1,4 +1,4 @@
-### big_fd.py 
+### bfd.py 
 
 #### 说明
 使用 python 编写脚本，查找 linux 系统中的大文件和目录，可支持命令行
@@ -6,10 +6,21 @@
 
 #### 用法
 ```angular2html
+-d：指定基础目录，默认为当前目录。
+-s，--size=500M：指定目录或文件的最小大小，默认为：500M。
+-t，--type=file或--type=directory：指定查找类型，文件或者目录，默认为文件。
+-S，--sort=asc或--sort=desc：指定排序规则，默认为：asc
+-L，--level：指定层级，默认为当前目录下所有。
+-h，--help：输出帮助信息。
+```
+#### 详解
+```angular2html
+bfd.py -b 指定目录 
 
 ```
 
-### clean_es_outofdate_date.py
+
+### esc.py
 
 #### 说明
 清理elasticsearch过期数据
@@ -38,13 +49,14 @@ privatizationlog-kube-system - 2018-07-02
 
 #### 用法
 ```angular2html
--i：指定索引名称，必须指定。
--s：指定索引与日期之间的分隔符，默认为：-。
--f：指定日期格式，默认为：
+-i，--index：指定索引名称，必须指定。
+-s，--separator：指定索引与日期之间的分隔符，默认为：-。
+-f，--format：指定日期格式，默认为：2018-07-22
+-h，--help：输出帮助信息。
 ```
 
 详解：
 ```angular2html
-clean_es_outofdate_data.py -i zinkin             # 删除当前日期之前的所有数据
-clean_es_outofdate_data.py -i zinkin 
+esc.py -i zinkin             # 删除当前日期之前的所有数据
+esc.py -i zinkin 
 ```
