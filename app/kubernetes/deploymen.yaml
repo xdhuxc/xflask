@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: xdhuxc
+  labels:
+    software: apache
+    project: x-project
+    app: xdhuxc-app
+    version: v20180723
+spec:
+  replicas: 3           # 副本数量
+  minReadySeconds: 30   # 滚动升级时，容器准备就绪时间最少为30s
+  strategy:
+    type: recreate      # 升级方式
+    # rollingUpdate     # 由于 replicas 为 3，则整个升级，pod 个数在2~4个之间
+    # maxSurge: 3       # 滚动升级时会先启动 3 个 pod
+    # maxUnavailable: 1 # 滚动升级时允许的最大unavailable的pod个数
+  selector:
+    matchLabels:
+      name: xdhuxc
+      software: apache
+      project: x-project
+      app: xdhuxc-app
+      version: v20180723
+  template:
+    metadata:
+      labels:
+        name: xdhuxc
+        software: apache
+        project: x-project
+        app: xdhuxc-app
+        version: v20180723
+    spec:
+      terminationGracePeriodSeconds: 60 # kubernetes 将会给应用发送 SIGTERM 信号，可以用来正确、优雅地关闭应用，默认为：30秒。
+      containers:
+      - name: xdhuxc-container-01
+        image: nginx:latest
+        command:
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 0.05
+            memory: 100Mi
+          limits:
+            cpu: 0.1
+            memory: 150Mi
+        livenessProbe:
