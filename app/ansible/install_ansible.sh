@@ -36,6 +36,7 @@ if [ $(command -v expect) ] ; then
         	if [ -n ${target_host} -a -n ${username} -a -n ${password} ] ; then
                 ./ssh-copy-id.exp ${target_host} ${username} ${password} ${file_path} ${port} > /dev/null 2>&1
                 if [ "$?" == "0" ] ; then
+                    # 将该机器信息写入临时文件中，安装完ansible后，添加主机组
                     echo "机器 ${target_host} 添加公钥成功。"
                 else
                     echo "机器 ${target_host} 添加公钥失败。"

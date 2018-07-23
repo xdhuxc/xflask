@@ -7,6 +7,8 @@
 1、在 hosts 文件中以如下格式添加机器信息
 ```angular2html
 targat_host username password port
+或
+targat_host username password
 ```
 例如，机器 10.10.24.32 的信息如下：
 ```angular2html

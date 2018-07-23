@@ -2,49 +2,103 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: xdhuxc
-  labels:
+  namespace: xdhuxc-namespace
+  labels:   #
     software: apache
     project: x-project
     app: xdhuxc-app
     version: v20180723
+    zone: china-beijing
+    cluster: xdhuxc-cluster
+    rack: rack-001
+  annotations:
+    build: ten
+    builder: xdhuxc
 spec:
+  hostPID: true
+  hostIPC: true
+  hostNetwork: true
   replicas: 3           # 副本数量
   minReadySeconds: 30   # 滚动升级时，容器准备就绪时间最少为30s
   strategy:
-    type: recreate      # 升级方式
+    # type: recreate      # 升级方式
     # rollingUpdate     # 由于 replicas 为 3，则整个升级，pod 个数在2~4个之间
     # maxSurge: 3       # 滚动升级时会先启动 3 个 pod
     # maxUnavailable: 1 # 滚动升级时允许的最大unavailable的pod个数
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
-      name: xdhuxc
-      software: apache
-      project: x-project
       app: xdhuxc-app
-      version: v20180723
   template:
     metadata:
-      labels:
-        name: xdhuxc
-        software: apache
-        project: x-project
-        app: xdhuxc-app
-        version: v20180723
+    labels:
+      app: xdhuxc-app
     spec:
       terminationGracePeriodSeconds: 60 # kubernetes 将会给应用发送 SIGTERM 信号，可以用来正确、优雅地关闭应用，默认为：30秒。
+      nodeSelector:
+        disktype: ssd                   # 调度到满足disktype=ssd的label的一组node上
+      nodeName: "k8s-master"            # 调度到 node名称为 k8s-master的节点上
       containers:
       - name: xdhuxc-container-01
         image: nginx:latest
-        command:
+        imagePullPolicy: IfNotPresent
+        command:                        # 容器启动时运行的命令
+        args:
         ports:
         - containerPort: 80
           name: http
           protocol: TCP
-        resources:
+        resources:                      # 资源分配
           requests:
             cpu: 0.05
             memory: 100Mi
           limits:
             cpu: 0.1
             memory: 150Mi
-        livenessProbe:
+        workingDir: /data/nginx
+        securityContext: # 容器内部权限控制
+          privileged: true
+          capabilities:
+            add:
+            - SYS_NICE
+            drop:
+            - KILL
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data/redis
+          readOnly: true
+        - name: host-storage
+          mountPath: /data/test
+        env:
+        - name: DEMO_GREET
+          value: "Hello Kubernetes"
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        livenessProbe: # livenessProbe 是 Kubernetes 认为该pod是存活的，不存在则需要杀掉，然后再新启动一个，以达到RC指定的个数。
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 30 # 容器启动 30s 后开始执行检查
+          periodSeconds: 5        # 每隔 5s 执行一次检查
+          timeoutSeconds: 5       # 超时时间，默认为：1s
+          successThreshold: 1     # 几次成功才认为是成功，默认是：1
+          failureThreshold: 5     # 几次失败才认为是失败，含有报警合并的感觉，默认是：3
+        readinessProbe: # readinessProbe 是 Kubernetes 认为该 pod 是启动成功的，这里根据每个应用的特性，自己去判断，可以执行command，也可以进行httpGet
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        volumes:
+        - name: redis-storage
+          emptyDir: {}
+        - name: host-storage
+          hostPath:
+            path: /data
