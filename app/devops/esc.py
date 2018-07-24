@@ -4,6 +4,7 @@
 import requests
 import os
 import time
+import datetime
 
 # 清理过期es数据，做成命令行的方式
 
@@ -45,12 +46,22 @@ def delete_index(index_name):
     return acknowledged
 
 
-def create_index():
+def create_index(index_name):
     """
     构造测试数据
     :return:
     """
-
+    # 创建索引，构造测试数据
+    for i in range(1, 6):
+        index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+        full_index_name = index_name + '_' + index_date
+        request_url = es_url + '/' + full_index_name
+        resp_json = requests.put(request_url)
+        result = resp_json['acknowledged']
+        if result == 'true':
+            print('创建索引 %s 成功' % full_index_name)
+        else:
+            print('创建索引 %s 失败' % full_index_name)
 
 
 if __name__ == '__main__':
@@ -64,4 +75,5 @@ if __name__ == '__main__':
     :param
     date_str: 时间，以秒计算
     """
-    delete_index('zipkin', '-', xtime)
+    full_index_name = 'zipkin' + '-' + xtime
+    delete_index(full_index_name)
