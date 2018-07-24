@@ -54,18 +54,35 @@ def create_index(index_name):
         full_index_name = index_name + '_' + index_date
         request_url = es_url + '/' + full_index_name
         print(request_url)
-        resp_json = requests.put(request_url)
-        resp_json = resp_json.json()
-        print(resp_json)
-        #result = resp_json['acknowledged']
-        if resp_json == 'true':
+        resp = requests.put(request_url)
+        acknowledged = resp.json()['acknowledged']
+        if acknowledged == 'true':
             print('创建索引 %s 成功' % full_index_name)
         else:
             print('创建索引 %s 失败' % full_index_name)
 
 
+def search_index(index_prefix):
+    """
+    获取以index_prefix开头的索引
+    :param index_prefix: 索引前缀
+    :return:
+    """
+    # 查找所有索引
+    request_url = es_url + '/' + '_cat/indices?v'
+    headers = {'Content-Type': 'application/json'}
+    resp = requests.get(request_url, headers)
+    print(resp.json())
+    print("--------------------------")
+    print(resp.text)
+    # 过滤出以 index_prefix 开头的索引
+
+
 if __name__ == '__main__':
     #create_index("xdhuxc-app")
-    for i in range(1, 6):
+    """
+        for i in range(1, 6):
         index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
         delete_index('xdhuxc-app' + '_' + '2018-07-21')
+    """
+    search_index('xdhuxc-app')
