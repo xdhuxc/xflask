@@ -69,7 +69,7 @@ def search_index(index_prefix):
     :return:
     """
     # 查找所有索引
-    request_url = es_url + '/' + '_cat/indices?v'
+    request_url = es_url + '/' + '_cat/indices'
     headers = {'Content-Type': 'application/json'}
     resp = requests.get(request_url, headers)
     print(resp.json())
