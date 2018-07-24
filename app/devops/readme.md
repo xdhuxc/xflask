@@ -60,3 +60,19 @@ privatizationlog-kube-system - 2018-07-02
 esc.py -i zinkin             # 删除当前日期之前的所有数据
 esc.py -i zinkin 
 ```
+
+
+```angular2html
+    # 时间字符串的构造
+    xdate = time.time()
+    date_format = '%Y-%m-%d'
+    xtime = time.strftime(date_format, time.localtime(xdate))
+    """
+    :param
+    separator: 索引名称与日期之间的分隔符，可能是：-，_，.等
+    :param
+    date_str: 时间，以秒计算
+    """
+    full_index_name = 'zipkin' + '-' + xtime
+    delete_index(full_index_name)
+```
