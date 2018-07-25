@@ -4,6 +4,7 @@
 import requests
 import os
 import datetime
+import json
 
 
 # 清理过期es数据，做成命令行的方式
@@ -72,18 +73,22 @@ def search_index(index_prefix):
     request_url = es_url + '/' + '_cat/indices'
     headers = {'Content-Type': 'application/json'}
     resp = requests.get(request_url, headers=headers)
-    print(resp.json())
     """
     得到一个List，每个元素为一个索引的信息
     从而，可以使用两种方式：
     1、循环遍历List，获得index的值并过滤。
-    2、使用jsonpath，直接获取index的值并过滤，一个表达式即可解决。实际走不通
+    2、使用jsonpath，直接获取index的值并过滤，一个表达式即可解决。实际没走通
     """
     # 获取所有 index 的值并过滤出以 index_prefix 开头的索引
+    rt = json.loads(resp.content)
+    rt_list = []
+    for item in rt:
+        full_index_name = item['index']
+        # 过滤出以 index_prefix 开头的索引
+        if full_index_name.startswith(index_prefix):
+            rt_list.append(full_index_name)
 
-    all_indexes = resp.content
-    # 过滤出以 index_prefix 开头的索引
-    for i in all_indexes:
+    for i in rt_list:
         print(i)
 
 
