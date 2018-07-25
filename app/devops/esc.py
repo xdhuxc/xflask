@@ -127,24 +127,17 @@ def usage():
 def test():
     # create_index("along")
 
-    # for i in range(1, 6):
-    # index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-
-    # delete_index('along' + '_' + '2018-07-24')
+    """
+    for i in range(1, 6):
+        index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+        delete_index('along' + '_' + index_date)
+    """
 
     """
     index_list = search_index('along')
     for item in index_list:
         print(item)
     """
-
-"""
--i，--index：指定待删除索引前缀或名称，必须指定。
--s，--separator：指定索引与日期之间的分隔符，默认为：-。
--f，--format：指定日期格式，默认为：2018-07-22。
--h，--help：输出帮助信息。
-https://www.yiibai.com/python/python_command_line_arguments.html
-"""
 
 
 def main(argv):
