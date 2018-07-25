@@ -5,6 +5,8 @@ import requests
 import os
 import datetime
 import json
+import sys
+import getopt
 
 
 # 清理过期es数据，做成命令行的方式
@@ -31,36 +33,37 @@ def delete_index(index_name):
     :param index_name: 待删除的索引名称
     :return:
     '''
-    request_url = es_url + '/' + index_name + '?' + 'pretty'
-    print(request_url)
+    request_url = es_url + '/' + index_name
     # 删除索引
     resp = requests.delete(request_url)
-    # 解析JSON格式返回值，得知操作是否成功，以便进行下一步操作。
-    acknowledged = resp.json()['acknowledged']
-    if acknowledged == 'true':  # 可能为：true，false，unknown
-        print("%s" % index_name + '删除成功。')
+    # 解析JSON格式返回值，得知操作是否成功，以便进行下一步操作。result = json.loads(resp.content)['acknowledged']
+    result_code = resp.status_code
+    if result_code == 200:
+        print("索引 %s 删除成功。" % index_name)
+    elif result_code == 404:
+        print('索引 %s 不存在。' % index_name)
     else:
-        print('%s' % index_name + '删除失败。')
-    return acknowledged
+        print('未知错误。')
 
 
 def create_index(index_name):
     """
-    构造测试数据
+    创建elasticsearch索引
+    :param index_name: 待创建的索引名称
     :return:
     """
-    # 创建索引，构造测试数据
-    for i in range(1, 6):
-        index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-        full_index_name = index_name + '_' + index_date
-        request_url = es_url + '/' + full_index_name
-        print(request_url)
-        resp = requests.put(request_url)
-        acknowledged = resp.json()['acknowledged']
-        if acknowledged == 'true':
-            print('创建索引 %s 成功' % full_index_name)
-        else:
-            print('创建索引 %s 失败' % full_index_name)
+    # 构造请求的 url
+    request_url = es_url + '/' + index_name
+    # 执行PUT请求，创建索引
+    resp = requests.put(request_url)
+    # 获取响应状态码
+    result_code = resp.status_code
+    if result_code == 200:
+        print('创建索引 %s 成功' % index_name)
+    elif result_code == 404:
+        print('创建索引 %s 失败' % index_name)
+    else:
+        print('未知错误。')
 
 
 def search_index(index_prefix):
@@ -73,30 +76,99 @@ def search_index(index_prefix):
     request_url = es_url + '/' + '_cat/indices'
     headers = {'Content-Type': 'application/json'}
     resp = requests.get(request_url, headers=headers)
-    """
-    得到一个List，每个元素为一个索引的信息
-    从而，可以使用两种方式：
-    1、循环遍历List，获得index的值并过滤。
-    2、使用jsonpath，直接获取index的值并过滤，一个表达式即可解决。实际没走通
-    """
-    # 获取所有 index 的值并过滤出以 index_prefix 开头的索引
-    rt = json.loads(resp.content)
-    rt_list = []
-    for item in rt:
-        full_index_name = item['index']
-        # 过滤出以 index_prefix 开头的索引
-        if full_index_name.startswith(index_prefix):
-            rt_list.append(full_index_name)
+    result_code = resp.status_code
+    if result_code == 200:
+        """
+        得到一个List，每个元素为一个索引的信息
+        从而，可以使用两种方式：
+        1、循环遍历List，获得index的值并过滤。
+        2、使用jsonpath，直接获取index的值并过滤，一个表达式即可解决。实际没走通
+        """
+        # 获取所有 index 的值并过滤出以 index_prefix 开头的索引
+        rt = json.loads(resp.content)
+        # 存储查询并过滤后的索引
+        rt_list = []
+        for item in rt:
+            full_index_name = item['index']
+            # 过滤出以 index_prefix 开头的索引
+            if full_index_name.startswith(index_prefix):
+                rt_list.append(full_index_name)
 
-    for i in rt_list:
-        print(i)
+        return rt_list
+    elif result_code == 404:
+        print("当前Elasticsearch节点 %s:%s 未找到以 %s 为前缀的索引。" % (es_host, es_http_port, index_prefix))
+        return None
+    else:
+        print('未知错误。')
+        return None
+
+
+def create_multi_index(index_prifix):
+    """
+    创建多个索引
+    :param index_prifix:
+    :return:
+    """
+    # 创建索引，构造测试数据
+    for item in range(1, 6):
+        index_date = (datetime.datetime.now() - datetime.timedelta(days=item)).strftime('%Y-%m-%d')
+        full_index_name = index_prifix + '_' + index_date
+        create_index(full_index_name)
+
+
+def test():
+    # create_index("along")
+
+    # for i in range(1, 6):
+    # index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+
+    # delete_index('along' + '_' + '2018-07-24')
+
+    """
+    index_list = search_index('along')
+    for item in index_list:
+        print(item)
+    """
+
+"""
+-i，--index：指定索引名称，必须指定。
+-s，--separator：指定索引与日期之间的分隔符，默认为：-。
+-f，--format：指定日期格式，默认为：2018-07-22。
+-h，--help：输出帮助信息。
+https://www.yiibai.com/python/python_command_line_arguments.html
+"""
+
+
+def main(argv):
+    index = ''
+    separator = ''
+    xformat = ''
+    try:
+        opts, args = getopt.getopt(argv, 'i:sfh', ['--index=', '--separator', '--format', '--help'])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ('-i', '--index='):
+            index = opt
+        elif opt in ('-s', '--separator='):
+            separator = opt
+        elif opt in ('-f', '--format='):
+            xformat = opt
+        else:
+            print()
+
+
+
+
+def usage():
+    print('usage: esc.py [options]                                      ')
+    print('-i，--index：指定索引名称，必须指定。                          ')
+    print('-s，--separator：指定索引与日期之间的分隔符，默认为：-。        ')
+    print('-f，--format：指定日期格式，默认为：%Y-%m-%d，例如：2018-07-22。')
+    print('-h，--help：输出帮助信息。                                     ')
 
 
 if __name__ == '__main__':
-    #create_index("xdhuxc-app")
-    """
-        for i in range(1, 6):
-        index_date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-        delete_index('xdhuxc-app' + '_' + '2018-07-21')
-    """
-    search_index('xdhuxc-app')
+    main(sys.argv[1:])
