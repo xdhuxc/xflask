@@ -19,12 +19,6 @@ es_tcp_port = os.getenv('es_tcp_port') or '9300'
 es_user = os.getenv('es_user') or 'esadmin'
 es_password = os.getenv('es_password') or 'esadmin'
 es_url = protocol + '://' + es_host + ':' + es_http_port
-'''
-[root@localhost ~]# curl -XDELETE http://172.20.17.4:9200/zipkin-2018-07-14       # zipkin-2018-07-14为索引名称
-{
-    "acknowledged":true
-}
-'''
 
 
 def delete_index(index_name):
@@ -40,10 +34,13 @@ def delete_index(index_name):
     result_code = resp.status_code
     if result_code == 200:
         print("索引 %s 删除成功。" % index_name)
+        return True
     elif result_code == 404:
         print('索引 %s 不存在。' % index_name)
+        return False
     else:
         print('未知错误。')
+        return False
 
 
 def create_index(index_name):
@@ -60,10 +57,13 @@ def create_index(index_name):
     result_code = resp.status_code
     if result_code == 200:
         print('创建索引 %s 成功' % index_name)
+        return True
     elif result_code == 404:
         print('创建索引 %s 失败' % index_name)
+        return False
     else:
         print('未知错误。')
+        return False
 
 
 def search_index(index_prefix):
@@ -116,6 +116,14 @@ def create_multi_index(index_prifix):
         create_index(full_index_name)
 
 
+def usage():
+    print('usage: esc.py [options]                                        ')
+    print('-i, --index: 指定待删除索引前缀或名称, 必须指定.                 ')
+    print('-s, --separator: 指定索引与日期之间的分隔符, 默认为：-.          ')
+    print('-f, --format: 指定日期格式, 默认为: %Y-%m-%d, 例如: 2018-07-22. ')
+    print('-h, --help: 输出帮助信息.                                       ')
+
+
 def test():
     # create_index("along")
 
@@ -131,7 +139,7 @@ def test():
     """
 
 """
--i，--index：指定索引名称，必须指定。
+-i，--index：指定待删除索引前缀或名称，必须指定。
 -s，--separator：指定索引与日期之间的分隔符，默认为：-。
 -f，--format：指定日期格式，默认为：2018-07-22。
 -h，--help：输出帮助信息。
@@ -141,14 +149,15 @@ https://www.yiibai.com/python/python_command_line_arguments.html
 
 def main(argv):
     index = ''
-    separator = ''
-    xformat = ''
+    separator = '_'
+    xformat = '%Y-%m-%d'
+    # 读取参数
     try:
         opts, args = getopt.getopt(argv, 'i:sfh', ['--index=', '--separator', '--format', '--help'])
     except getopt.GetoptError:
         usage()
-        sys.exit(2)
-
+        sys.exit()
+    # 获取详细参数
     for opt, arg in opts:
         if opt in ('-i', '--index='):
             index = opt
@@ -156,18 +165,32 @@ def main(argv):
             separator = opt
         elif opt in ('-f', '--format='):
             xformat = opt
+        elif opt in ('-h', '--help'):
+            usage()
+            sys.exit()
         else:
-            print()
+            print('未知的参数。')
+            usage()
+            sys.exit()
 
-
-
-
-def usage():
-    print('usage: esc.py [options]                                      ')
-    print('-i，--index：指定索引名称，必须指定。                          ')
-    print('-s，--separator：指定索引与日期之间的分隔符，默认为：-。        ')
-    print('-f，--format：指定日期格式，默认为：%Y-%m-%d，例如：2018-07-22。')
-    print('-h，--help：输出帮助信息。                                     ')
+    # 执行命令
+    if index:
+        count = 1
+        # 循环删除今天之前的所有索引
+        while True:
+            index_date = (datetime.datetime.now() - datetime.timedelta(days=count)).strftime(xformat)
+            full_index_name = index + separator + index_date
+            # 查询查询所有符合条件的索引
+            index_list = search_index(full_index_name)
+            # 删除查询出的所有索引
+            if index_list:
+                for item in index_list:
+                    delete_index(item)
+            count = count + 1
+    else:
+        print("必须指定索引前缀或索引名称。")
+        usage()
+        sys.exit()
 
 
 if __name__ == '__main__':

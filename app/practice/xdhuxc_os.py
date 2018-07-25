@@ -48,3 +48,26 @@ print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(os.path.getctime(str_pat
 
 # 规范化路径
 print(os.path.normpath(str_path))
+
+
+try:
+    sys.exit(0)
+except:
+    print('sys_die')
+finally:
+    print('sys_cleanup')
+
+try:
+    os._exit(0)
+except:
+    print('os_die')
+print('os_exit')
+
+"""
+os._exit() 会直接将 python 程序终止，之后的所有代码都不会继续执行。
+sys.exit() 会引发一个SystemExit异常，如果这个异常没有被捕获，那么python解释器将会退出。如果有捕获此异常的代码，那么这些代码还是会执行，捕获这个异常可以做一些额外的清理工作。0为正常退出，其他（1~127）为不正常退出。
+
+一般情况下使用sys.exit()即可，一般在fork出来的子进程中使用os._exit()。
+
+一般来说，os._exit()用于在线程中退出，sys.exit()用于在主线程中退出。
+"""
