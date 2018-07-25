@@ -13,6 +13,47 @@ https://www.cnblogs.com/saiwa/articles/5253713.html
 '''
 
 
+def get_dir_size(base_dir):
+    # 如果文件不存在，直接返回
+    if not os.path.exists(base_dir):
+        print("%s" % base_dir + "不存在。")
+        return 0
+
+    if os.path.isfile(base_dir):
+        return os.path.getsize(base_dir)
+    '''
+    os.walk()是一个简单易用的文件、目录遍历器，可以帮助我们高效地处理文件、目录方面的问题。
+    os.walk()函数的声明为：
+    walk(top, topDown=True, onerror=None, followlinks=False)
+    参数：
+    top：所要遍历的目录的地址。
+    topDown为真，则优先遍历top目录，否则优先遍历top的子目录，默认为：True。
+    onerror：需要一个callable对象，当walk需要异常时，会调用。
+    followlinks：如果为真，则会遍历目录下的快捷方式实际所指的目录，默认为：False
+
+    os.walk 的返回值是一个生成器，也就是说我们需要不断地遍历它，来获得所有的内容。
+
+    每次遍历的对象都返回的是一个三元组(root, dirs, files)
+    root：所指的是当前正在遍历的这个目录本身的地址。
+    dirs：一个list，当前目录下所有目录的名字，不包括子目录。
+    files：一个list，当前目录下的所有文件的名字，不包括子目录中的文件。
+
+    如果topDown参数为真，walk会遍历top目录，与top目录中的每一个子目录。
+    '''
+
+    total_size = 0
+    for root, dirs, files in os.walk(base_dir):
+        # 处理root目录下的所有文件
+        for xfile in files:
+            total_size = total_size + os.path.getsize(os.path.join(root, xfile))
+
+        # 处理root目录下的子目录
+        for xdir in dirs:
+            total_size = total_size + get_dir_size(os.path.join(root, xdir))
+
+    return total_size
+
+
 def main(argv):
     # 指定查找目录，默认为当前目录。
     base_dir = os.getcwd()
@@ -65,47 +106,6 @@ def xtype():
 
 def level():
     print('指定查找的层级')
-
-
-def get_dir_size(base_dir):
-    # 如果文件不存在，直接返回
-    if not os.path.exists(base_dir):
-        print("%s" % base_dir + "不存在。")
-        return 0
-
-    if os.path.isfile(base_dir):
-        return os.path.getsize(base_dir)
-    '''
-    os.walk()是一个简单易用的文件、目录遍历器，可以帮助我们高效地处理文件、目录方面的问题。
-    os.walk()函数的声明为：
-    walk(top, topDown=True, onerror=None, followlinks=False)
-    参数：
-    top：所要遍历的目录的地址。
-    topDown为真，则优先遍历top目录，否则优先遍历top的子目录，默认为：True。
-    onerror：需要一个callable对象，当walk需要异常时，会调用。
-    followlinks：如果为真，则会遍历目录下的快捷方式实际所指的目录，默认为：False
-    
-    os.walk 的返回值是一个生成器，也就是说我们需要不断地遍历它，来获得所有的内容。
-    
-    每次遍历的对象都返回的是一个三元组(root, dirs, files)
-    root：所指的是当前正在遍历的这个目录本身的地址。
-    dirs：一个list，当前目录下所有目录的名字，不包括子目录。
-    files：一个list，当前目录下的所有文件的名字，不包括子目录中的文件。
-    
-    如果topDown参数为真，walk会遍历top目录，与top目录中的每一个子目录。
-    '''
-
-    total_size = 0
-    for root, dirs, files in os.walk(base_dir):
-        # 处理root目录下的所有文件
-        for xfile in files:
-            total_size = total_size + os.path.getsize(os.path.join(root, xfile))
-
-        # 处理root目录下的子目录
-        for xdir in dirs:
-            total_size = total_size + get_dir_size(os.path.join(root, xdir))
-
-    return total_size
 
 
 if __name__ == '__main__':
