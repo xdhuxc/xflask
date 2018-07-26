@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# 除法总是会返回真实的商，不管操作数是整形还是浮点型。执行from future import division 指令就可以做到这一点。
+from __future__ import division # 需要放到文件最开头
 import os
 import sys
 import getopt
+
 
 # https://blog.csdn.net/beautygao/article/details/79231571
 '''
@@ -18,6 +21,7 @@ total_size = 0L
 
 
 def get_dir_size(base_dir):
+    base_dir = unicode(base_dir, 'utf-8')
     # 如果文件不存在，直接返回
     if not os.path.exists(base_dir):
         print("%s 不存在" % base_dir )
@@ -49,17 +53,34 @@ def get_dir_size(base_dir):
     for root, dirs, files in os.walk(base_dir):
         # 处理root目录下的所有文件
         for xfile in files:
-            total_size = total_size + os.path.getsize(os.path.join(root, xfile))
+            total_size = total_size + os.path.getsize(os.path.join(root.encode('utf-8'), xfile.encode('utf-8')))
 
         # 处理root目录下的子目录
         for xdir in dirs:
-            total_size = total_size + get_dir_size(os.path.join(root, xdir))
+            total_size = total_size + get_dir_size(os.path.join(root.encode('utf-8'), xdir.encode('utf-8')))
 
     return total_size
 
 
-def readable():
-    print()
+def readable(file_size):
+    """
+
+    :param file_size:
+    :return:
+    """
+    k, m, g, t, p = 1024, 1024**2, 1024**3, 1024**4, 1024**5
+    if file_size < k:
+        return format(file_size, '.2f') + 'B'
+    elif file_size < m:
+        return format((file_size / k), '.2f') + 'KB'
+    elif file_size < g:
+        return format((file_size / m), '.2f') + 'MB'
+    elif file_size < t:
+        return format((file_size / g), '.2f') + 'GB'
+    elif file_size < p:
+        return format((file_size / t), '.2f') + 'TB'
+    else:
+        return format((file_size / p), '.2f') + 'PB'
 
 
 def main(argv):
@@ -117,7 +138,8 @@ def level():
 
 
 if __name__ == '__main__':
-    print(get_dir_size('C:\\Users\\wanghuan\\Desktop\\temp.txt'))
+    print(get_dir_size('C:\\Users\\Administrator\\Desktop\\中建项目'))
+    print(readable(get_dir_size('C:\\Users\\Administrator\\Desktop\\中建项目')))
 
     print("Hello World")
     #main(sys.argv[1:])
