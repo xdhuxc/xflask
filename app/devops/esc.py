@@ -13,11 +13,12 @@ import getopt
 
 # elasticsearch 配置信息，以全局变量的方式配置
 protocol = os.getenv('es_protocol') or 'http'
-es_host = os.getenv('es_host') or '10.10.24.75'
+es_host = os.getenv('es_host') or '127.0.0.1'
 es_http_port = os.getenv('es_http_port') or '9200'
 es_tcp_port = os.getenv('es_tcp_port') or '9300'
 es_user = os.getenv('es_user') or 'esadmin'
 es_password = os.getenv('es_password') or 'esadmin'
+
 es_url = protocol + '://' + es_host + ':' + es_http_port
 
 
@@ -121,6 +122,8 @@ def usage():
     print('-i, --index: 指定待删除索引前缀或名称, 必须指定.                 ')
     print('-s, --separator: 指定索引与日期之间的分隔符, 默认为：-.          ')
     print('-f, --format: 指定日期格式, 默认为: %Y-%m-%d, 例如: 2018-07-22. ')
+    print('-H, --host: 指定 elasticsearch 所在主机, 默认为当前主机.         ')
+    print('-p, --port: 指定 elasticsearch 的 HTTP 端口, 默认为: 9200.      ')
     print('-h, --help: 输出帮助信息.                                       ')
 
 
@@ -144,9 +147,12 @@ def main(argv):
     index = ''
     separator = '_'
     xformat = '%Y-%m-%d'
+    port = 9200
+    host = '127.0.0.1'
     # 读取参数
     try:
-        opts, args = getopt.getopt(argv, 'i:sfh', ['--index=', '--separator', '--format', '--help'])
+        opts, args = getopt.getopt(argv, 'i:sfhpH', ['--index=', '--separator=',
+                                                     '--format=', '--port=', '--host=', '--help='])
     except getopt.GetoptError:
         usage()
         sys.exit()
@@ -158,6 +164,10 @@ def main(argv):
             separator = opt
         elif opt in ('-f', '--format='):
             xformat = opt
+        elif opt in ('-H', '--host='):
+            os.putenv('es_host', opt)
+        elif opt in ('-p', '--port'):
+            os.putenv('es_http_port', opt)
         elif opt in ('-h', '--help'):
             usage()
             sys.exit()

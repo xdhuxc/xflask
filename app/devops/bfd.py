@@ -11,12 +11,16 @@ http://andylin02.iteye.com/blog/1071448
 http://www.runoob.com/python/python-command-line-arguments.html
 https://www.cnblogs.com/saiwa/articles/5253713.html
 '''
+# 声明全局变量
+global total_size
+# 给全局变量赋值
+total_size = 0L
 
 
 def get_dir_size(base_dir):
     # 如果文件不存在，直接返回
     if not os.path.exists(base_dir):
-        print("%s" % base_dir + "不存在。")
+        print("%s 不存在" % base_dir )
         return 0
 
     if os.path.isfile(base_dir):
@@ -40,8 +44,8 @@ def get_dir_size(base_dir):
 
     如果topDown参数为真，walk会遍历top目录，与top目录中的每一个子目录。
     '''
-
-    total_size = 0
+    # 再次声明，表示这里使用的是全局变量，而不是局部变量。
+    total_size = 0L
     for root, dirs, files in os.walk(base_dir):
         # 处理root目录下的所有文件
         for xfile in files:
@@ -52,6 +56,10 @@ def get_dir_size(base_dir):
             total_size = total_size + get_dir_size(os.path.join(root, xdir))
 
     return total_size
+
+
+def readable():
+    print()
 
 
 def main(argv):
@@ -109,5 +117,8 @@ def level():
 
 
 if __name__ == '__main__':
+    print(get_dir_size('C:\\Users\\wanghuan\\Desktop\\temp.txt'))
+
     print("Hello World")
-    main(sys.argv[1:])
+    #main(sys.argv[1:])
+

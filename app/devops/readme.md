@@ -45,6 +45,8 @@ index_prefix + separator + format_date
 -i, --index: 指定待删除索引前缀或名称, 必须指定.                 
 -s, --separator: 指定索引与日期之间的分隔符, 默认为：-.          
 -f, --format: 指定日期格式, 默认为: %Y-%m-%d, 例如: 2018-07-22. 
+-H, --host: 指定 elasticsearch 所在主机, 默认为当前主机.        
+-p, --port: 指定 elasticsearch 的 HTTP 端口, 默认为: 9200. 
 -h, --help: 输出帮助信息. 
 ```
 

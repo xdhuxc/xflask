@@ -23,7 +23,7 @@ print("当前工作目录路径为：%s" % os.path.abspath(os.curdir))
 # 获取当前工作目录的父目录
 print("当前工作目录的父目录路径为：%s" % os.path.abspath('..'))
 
-str_path = 'C:\\xdhuxc\\Go'
+str_path = 'C:\\Users\\wanghuan\\Desktop'
 # 判断str_path是否存在
 if os.path.exists(str_path):
     print("%s" % str_path + ' 存在。')
@@ -35,7 +35,7 @@ elif os.path.islink(str_path):
     print('%s' % str_path + '是符号链接文件。')
 elif os.path.abspath(str_path):
     print('%s' % str_path + '是绝对路径。')
-# 获取文件的大小，以字节为单位
+# 获取文件或目录的大小，如果是目录，返回0L，以字节为单位
 str_path = 'C:\\Users\\wanghuan\\Desktop\\ingress.yaml'
 print('%s 的大小为：%dB' % (str_path, os.path.getsize(str_path)))
 
