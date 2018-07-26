@@ -9,6 +9,8 @@ for i in range(1, 5):
 
 base_dir = 'C:\\Users\\Administrator\\Desktop\\yztc'
 
+
+
 global total_size
 base_dir = unicode(base_dir)
 for item in os.listdir(base_dir):
