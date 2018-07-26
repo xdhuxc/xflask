@@ -35,9 +35,11 @@ elif os.path.islink(str_path):
     print('%s' % str_path + '是符号链接文件。')
 elif os.path.abspath(str_path):
     print('%s' % str_path + '是绝对路径。')
+
+
 # 获取文件或目录的大小，如果是目录，返回0L，以字节为单位
 str_path = 'C:\\Users\\wanghuan\\Desktop\\ingress.yaml'
-print('%s 的大小为：%dB' % (str_path, os.path.getsize(str_path)))
+print('%s 的大小为：%dB' % (str_path, os.path.getsize(str_path.encode('utf-8'))))
 
 # 返回文件或目录的最后存取时间
 print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(os.path.getatime(str_path))))
@@ -71,3 +73,4 @@ sys.exit() 会引发一个SystemExit异常，如果这个异常没有被捕获�
 
 一般来说，os._exit()用于在线程中退出，sys.exit()用于在主线程中退出。
 """
+
