@@ -18,6 +18,7 @@ from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
+from flask_sqlalchemy import SQLAlchemy
 
 """
 为了实现CSRF保护，Flask-WTF需要程序设置一个秘钥。Flask-WTF使用这个秘钥生成加密令牌，再用令牌验证请求中表单数据的真伪，
@@ -30,9 +31,12 @@ app.config 字典可用来存储框架、扩展和程序本身的配置变量
 SECRET_KEY配置变量是通用秘钥，可在Flask和多个第三方扩展中使用，加密的强度取决于变量值的机密程度。
 """
 app.config['SECRET_KEY'] = 'xdhuxc-hardly'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:19940423@localhost/xflask'
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+db = SQLAlchemy(app)
 
 
 class NameForm(FlaskForm):
@@ -122,8 +126,35 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'), 500
 
+"""
+一个角色可属于多个用户，而每个用户都只能有一个角色。
+"""
 
 
+class Role(db.Model):
+    """
+    类变量 __tablename__ 定义在数据库中使用的表名
+    如果没有定义__tablename__，flask-SQLAlchemy会使用一个默认的名字，但是默认的表名没有遵守使用复数形式进行命名的约定。
+    """
+    __tablename__ = 'roles'
+    role_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    role_name = db.Column(db.String(50), unique=True)
+
+    """
+    %r 调用 repr() 函数打印字符串，repr() 函数返回的字符串是加上了转义序列，是直接书写的字符串的形式。
+    %s 调用 str() 函数打印字符串，str()函数返回原始字符串。
+    """
+    def __repr__(self):
+        return '<Role %r>' % self.role_name
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_name = db.Column(db.String(50), unique=True, index=True)
+
+    def __repr__(self):
+        return '<User %r>' % self.user_name
 
 
 # __name__ == '__main__' 是 Python 的惯常用法，在这里确保直接执行这个脚本时才会启动开发 web 服务器。
