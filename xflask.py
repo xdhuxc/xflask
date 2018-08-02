@@ -33,6 +33,7 @@ SECRET_KEY配置变量是通用秘钥，可在Flask和多个第三方扩展中�
 app.config['SECRET_KEY'] = 'xdhuxc-hardly'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:19940423@localhost/xflask'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
@@ -139,6 +140,7 @@ class Role(db.Model):
     __tablename__ = 'roles'
     role_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     role_name = db.Column(db.String(50), unique=True)
+    users = db.relationship('User', backref='role')
 
     """
     %r 调用 repr() 函数打印字符串，repr() 函数返回的字符串是加上了转义序列，是直接书写的字符串的形式。
@@ -152,6 +154,7 @@ class User(db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_name = db.Column(db.String(50), unique=True, index=True)
+    user_role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'))
 
     def __repr__(self):
         return '<User %r>' % self.user_name

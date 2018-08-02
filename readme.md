@@ -15,4 +15,10 @@ pip freeze > requirements.txt
 pip install -r requirements.txt
 ```
 
+### 扩展安装
+需要在虚拟环境中安装
+```angularjs
+
+```
+
 
