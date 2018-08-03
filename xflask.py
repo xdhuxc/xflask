@@ -13,6 +13,9 @@ from flask_script import Manager
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from datetime import datetime
+from flask_script import Shell
+from flask_migrate import Migrate
+from flask_migrate import MigrateCommand
 
 
 from flask_wtf import FlaskForm
@@ -38,6 +41,8 @@ manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 
 
 class NameForm(FlaskForm):
@@ -84,8 +89,8 @@ def index_2():
     return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
 
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
+@app.route('/3', methods=['GET', 'POST'])
+def index_3():
     form = NameForm()
     if form.validate_on_submit():
         old_name = session.get('name')
@@ -140,7 +145,7 @@ class Role(db.Model):
     __tablename__ = 'roles'
     role_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     role_name = db.Column(db.String(50), unique=True)
-    users = db.relationship('User', backref='role')
+    users = db.relationship('User', backref='role', lazy='dynamic')
 
     """
     %r 调用 repr() 函数打印字符串，repr() 函数返回的字符串是加上了转义序列，是直接书写的字符串的形式。
@@ -154,10 +159,43 @@ class User(db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_name = db.Column(db.String(50), unique=True, index=True)
-    user_role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'))
 
     def __repr__(self):
         return '<User %r>' % self.user_name
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    form = NameForm()
+    if form.validate_on_submit():
+        xuser = User.query.filter_by(user_name=form.name.data).first()
+        if xuser is None:
+            xuser = User(user_name = form.name.data)
+            db.session.add(xuser)
+            session['known'] = False
+        else:
+            session['known'] = True
+        session['name'] = form.name.data
+        form.name.data = ''
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form, name=session.get('name'),
+                           known=session.get('known', False), current_time=datetime.utcnow())
+
+"""
+为 shell 命令添加一个上下文
+"""
+
+
+def make_shell_context():
+    """
+    make_shell_context()函数注册了程序、数据库实例以及模型，因此这些对象能直接导入shell
+    :return:
+    """
+    return dict(app=app, db=db, User=User, Role=Role)
+
+
+manager.add_command('shell', Shell(make_context=make_shell_context()))
 
 
 # __name__ == '__main__' 是 Python 的惯常用法，在这里确保直接执行这个脚本时才会启动开发 web 服务器。
