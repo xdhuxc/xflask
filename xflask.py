@@ -16,6 +16,10 @@ from datetime import datetime
 from flask_script import Shell
 from flask_migrate import Migrate
 from flask_migrate import MigrateCommand
+from flask_mail import Mail
+from flask_mail import Message
+from flask_mail import MIMEText
+import os
 
 
 from flask_wtf import FlaskForm
@@ -37,12 +41,25 @@ app.config['SECRET_KEY'] = 'xdhuxc-hardly'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:19940423@localhost/xflask'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+# 邮件配置信息
+app.config['MAIL_SERVER'] = 'smtp.163.com'
+app.config['MAIL_PORT'] = 25
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
+app.config['FLASKY_MAIL_SENDER'] = 'xdhuxc@163..com'
+app.config['FLASKY_ADMIN'] = 'wanghuanand@163.com'
+
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
+mail = Mail(app)
+
+os.putenv('MAIL_USERNAME', 'xdhuxc')
+os.putenv('MAIL_PASSWORD', '952137w')
 
 
 class NameForm(FlaskForm):
@@ -171,9 +188,11 @@ def index():
     if form.validate_on_submit():
         xuser = User.query.filter_by(user_name=form.name.data).first()
         if xuser is None:
-            xuser = User(user_name = form.name.data)
+            xuser = User(user_name=form.name.data)
             db.session.add(xuser)
             session['known'] = False
+            if app.config['FLASKY_ADMIN']:
+                send_email(app.config['FLASKY_ADMIN'], 'New User', 'mail/new_user', user=xuser)
         else:
             session['known'] = True
         session['name'] = form.name.data
@@ -196,6 +215,14 @@ def make_shell_context():
 
 
 manager.add_command('shell', Shell(make_context=make_shell_context()))
+
+
+def send_email(receiver, subject, template, **kwargs):
+    message = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject, sender=app.config['FLASKY_MAIL_SENDER'],
+                      recipients=[receiver])
+    message.body = render_template(template + '.txt', **kwargs)
+    message.body = render_template(template + '.html', **kwargs)
+    mail.send(message)
 
 
 # __name__ == '__main__' 是 Python 的惯常用法，在这里确保直接执行这个脚本时才会启动开发 web 服务器。

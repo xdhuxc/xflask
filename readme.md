@@ -20,5 +20,12 @@ pip install -r requirements.txt
 ```angularjs
 
 ```
-
-
+### 数据库迁移
+1、migrate 子命令用于自动创建迁移脚本
+```angularjs
+python xflask.py db migrate
+```
+2、把迁移应用到数据库中，且不影响其中保存的数据
+```angularjs
+python xflask.py db migrate
+```
